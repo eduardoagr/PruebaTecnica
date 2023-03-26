@@ -39,7 +39,7 @@
             Grid.Column="1"
             VerticalAlignment="Center"
             IsReadOnly="True"
-            Text="{Binding FilePath}" />
+                 Text="{Binding programPath}" />
 
         <Button
             Grid.Column="2"
@@ -74,10 +74,9 @@
         <Label
             Grid.RowSpan="3"
             Grid.Column="4"
-            HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Content="Resultado"
-            FontSize="30"
+            Content="{Binding res}"
+            FontSize="12"
             FontStyle="Oblique" />
 
         <StackPanel
@@ -86,11 +85,15 @@
 
             <Button
                 Margin="10"
-                Content="Cálculo 1" />
+                Content="Cálculo 1"
+                Command="{Binding CalculateCommand}"
+                CommandParameter="1"/>
 
             <Button
                 Margin="10"
-                Content="Cálculo 2" />
+                Content="Cálculo 2"
+                Command="{Binding CalculateCommand}"
+                CommandParameter="2"/>
         </StackPanel>
     </Grid>
 </Window>
