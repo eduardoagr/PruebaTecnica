@@ -21,6 +21,8 @@ namespace PruebaTecnica.ViewModel {
 
         public string? res { get; set; }
 
+        public string? dirr { get; set; }
+
         #endregion
 
         #region Commands
@@ -62,8 +64,9 @@ namespace PruebaTecnica.ViewModel {
 
         public MainWindowViewModel() {
 
-            var dir = Directory.GetParent(Directory.GetCurrentDirectory())!.Parent!.Parent!.FullName;
-            var filePath = Path.Combine(dir, "input.txt");
+            // Esto e nadamas para probar
+            dirr = Directory.GetParent(Directory.GetCurrentDirectory())!.Parent!.Parent!.FullName;
+            var filePath = Path.Combine(dirr, "input.txt");
 
             programPath = filePath;
 
@@ -73,81 +76,92 @@ namespace PruebaTecnica.ViewModel {
         }
 
         private async Task CalculateAction(string num) {
-            int[] intcodeProgram = new int[0];
+            int[] intcodeProgram = Array.Empty<int>();
+
             switch (num) {
                 case "1":
-                    // Check if all required input values are provided
                     if (!string.IsNullOrEmpty(programPath)
-                        && !string.IsNullOrEmpty(SustantivoText)
-                        && !string.IsNullOrEmpty(VerboText)) {
+                    && !string.IsNullOrEmpty(SustantivoText)
+                    && !string.IsNullOrEmpty(VerboText)) {
                         try {
-                            // Read the Intcode program from the file
                             intcodeProgram = ReadIntcodeProgramFromFile(programPath);
 
-                            // Modify the Intcode program with the provided input values
                             ModifyIntcodeProgram(intcodeProgram, int.Parse(SustantivoText), int.Parse(VerboText));
 
-                            // Execute the Intcode program and get the result
                             int result = ExecuteIntcodeProgram(intcodeProgram);
 
-                            // Display the result
-                            string resultMessage = "The value at position 0 is: " + result;
-                            MessageBox.Show(resultMessage);
+                            res = $"Sustantivo: {SustantivoText} \nVerbo {VerboText}\nResultado: {result}";
 
-                            // Create a text file with the answer
-                            using StreamWriter writer = new StreamWriter("answer1.txt");
-                            await writer.WriteAsync(resultMessage);
+                            string fileName = "respuesta1.txt";
+                            string filePath = Path.Combine(dirr!, fileName);
+                            using StreamWriter writer = new(filePath);
+                            await writer.WriteAsync(res);
+                            MessageBox.Show($"Archivo creado en: {filePath}");
+
                         } catch (IOException ex) {
-                            MessageBox.Show($"Error reading file: {ex.Message}");
+                            throw new Exception($"Error al leer el archivo: {ex.Message}");
                         } catch (InvalidOperationException ex) {
-                            MessageBox.Show($"Error executing program: {ex.Message}");
+                            throw new Exception($"Error al ejecutar el programa: {ex.Message}");
                         }
                     } else {
-                        MessageBox.Show("Please specify the IntCode program path, sustantivo and verbo values.");
+                        MessageBox.Show("Por favor, especifique la ruta del programa IntCode, el valor de sustantivo y el valor de verbo.");
                     }
                     break;
+
+
                 case "2":
-                    if (!string.IsNullOrEmpty(programPath) && !string.IsNullOrEmpty(res)) { 
+                    if (!string.IsNullOrEmpty(programPath) && !string.IsNullOrEmpty(res)) {
                         try {
-                            const int MAX_VALUE = 999999;
+                            const int MAX_VALUE = 999;
                             const int DESIRED_OUTPUT = 19690720;
 
-                            // Read the Intcode program from the file
+                            // Leer el programa Intcode desde el archivo
                             intcodeProgram = ReadIntcodeProgramFromFile(programPath);
 
                             bool resultFound = false;
 
-                            // Find the input values that produce the desired output
+                            // Buscar los valores de entrada que produzcan el resultado deseado
                             await Task.Run(() => {
-                                Parallel.For(0, MAX_VALUE + 1, (noun) => {
-                                    for (int verb = 0; verb <= MAX_VALUE; verb++) {
+                                Parallel.For(0, MAX_VALUE + 1, (sustantivo) => {
+                                    for (int verbo = 0; verbo <= MAX_VALUE; verbo++) {
                                         int[] modifiedProgram = (int[])intcodeProgram.Clone();
-                                        ModifyIntcodeProgram(modifiedProgram, noun, verb);
+                                        ModifyIntcodeProgram(modifiedProgram, sustantivo, verbo);
                                         int result = ExecuteIntcodeProgram(modifiedProgram);
 
                                         if (result == DESIRED_OUTPUT) {
-                                            SustantivoText = $"{noun}";
-                                            VerboText = $"{verb}";
+                                            SustantivoText = $"{sustantivo}";
+                                            VerboText = $"{verbo}";
                                             resultFound = true;
+                                            return;
                                         }
                                     }
                                 });
                             });
 
-                            // Display the input values that produce the desired output
+                            // Mostrar los valores de entrada que producen el resultado deseado
                             if (resultFound) {
-                                MessageBox.Show($"Sustantivo: {SustantivoText}\nVerbo: {VerboText}");
+                                string fileName = "respuesta2.txt";
+                                string filePath = Path.Combine(dirr!, fileName);
+                                using StreamWriter writer = new(filePath);
+                                await writer.WriteAsync($"Sustantivo: {SustantivoText}\nVerbo: {VerboText}");
                             } else {
-                                MessageBox.Show("No result found.");
+                                MessageBox.Show("No se encontró ningún resultado.");
                             }
-                        } catch (Exception e) {
-                            MessageBox.Show(e.Message);
+                        } catch (IOException ex) {
+                            MessageBox.Show($"Error al leer el archivo: {ex.Message}");
+                        } catch (InvalidOperationException ex) {
+                            MessageBox.Show($"Error al ejecutar el programa: {ex.Message}");
+                        } catch (Exception ex) {
+                            MessageBox.Show($"Se produjo un error inesperado: {ex.Message}");
                         }
+                    } else {
+                        MessageBox.Show("Por favor, especifique la ruta del programa IntCode.");
                     }
+                    break;
+                default:
                     break;
             }
         }
-
 
 
 
