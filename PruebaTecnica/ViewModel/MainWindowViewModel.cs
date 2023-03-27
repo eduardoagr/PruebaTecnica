@@ -101,7 +101,6 @@ namespace PruebaTecnica.ViewModel {
                         } catch (IOException ex) {
                             throw new Exception($"Error al leer el archivo: {ex.Message}");
                         } catch (InvalidOperationException ex) {
-                            throw new Exception($"Error al ejecutar el programa: {ex.Message}");
                         }
                     } else {
                         MessageBox.Show("Por favor, especifique la ruta del programa IntCode, el valor de sustantivo y el valor de verbo.");
